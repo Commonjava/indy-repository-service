@@ -22,7 +22,6 @@ import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.service.repository.config.IndyRepositoryConfiguration;
 import org.commonjava.indy.service.repository.config.MetricsConfiguration;
-import org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
@@ -32,6 +31,7 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -47,8 +47,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager.INDY_METRIC_ISPN;
-import static org.commonjava.indy.service.repository.data.metrics.NameUtils.getSupername;
+import static org.commonjava.indy.service.repository.data.metrics.MetricsResitrySet.INDY_METRIC_ISPN;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 
 /**
  * Created by jdcasey on 3/8/16.

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/service-parent)
+ * Copyright (C) 2020 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,7 @@
  */
 package org.commonjava.indy.service.repository.data.metrics;
 
-public interface Metered
+public class MetricsResitrySet
 {
-    long getCount();
-
-    double getFifteenMinuteRate();
-
-    double getFiveMinuteRate();
-
-    double getMeanRate();
-
-    double getOneMinuteRate();
+    public static final String INDY_METRIC_ISPN = "indy.ispn";
 }

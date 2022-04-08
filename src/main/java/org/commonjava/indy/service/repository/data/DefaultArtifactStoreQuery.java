@@ -557,9 +557,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             return result;
         }
 
-        Set<StoreKey> seen = result != null ?
-                result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) :
-                new HashSet<>();
+        Set<StoreKey> seen = result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() );
         AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
 
         List<StoreKey> members = new ArrayList<>( groupRepo.getConstituents() );

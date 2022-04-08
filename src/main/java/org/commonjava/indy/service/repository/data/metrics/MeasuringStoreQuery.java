@@ -26,6 +26,7 @@ import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import java.util.Collection;
 import java.util.List;

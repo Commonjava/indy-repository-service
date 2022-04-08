@@ -15,11 +15,11 @@
  */
 package org.commonjava.indy.service.repository.data;
 
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.event.common.EventMetadata;
 import org.commonjava.event.store.StoreUpdateType;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
 import org.commonjava.indy.service.repository.change.event.StoreEventDispatcher;
-import org.commonjava.indy.service.repository.concurrent.Locker;
 import org.commonjava.indy.service.repository.config.IndyRepositoryConfiguration;
 import org.commonjava.indy.service.repository.config.SslValidationConfiguration;
 import org.commonjava.indy.service.repository.exception.IndyDataException;
@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/service-parent)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,7 @@
  */
 package org.commonjava.indy.service.repository.data.metrics;
 
-import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-@InterceptorBinding
-@Target( { PARAMETER } )
-@Retention( RUNTIME )
-public @interface MetricWrapperNamed
+public enum TracerPlugin
 {
+    opentelemetry, honeycomb;
 }

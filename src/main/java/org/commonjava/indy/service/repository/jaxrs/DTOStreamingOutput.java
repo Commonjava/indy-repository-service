@@ -19,10 +19,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.service.repository.config.MetricsConfiguration;
-import org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager;
-import org.commonjava.indy.service.repository.data.metrics.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager.METER;
-import static org.commonjava.indy.service.repository.data.metrics.NameUtils.getDefaultName;
-import static org.commonjava.indy.service.repository.data.metrics.NameUtils.getName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 
 public class DTOStreamingOutput
         implements StreamingOutput

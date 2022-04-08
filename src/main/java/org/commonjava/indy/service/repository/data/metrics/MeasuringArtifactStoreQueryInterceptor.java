@@ -20,6 +20,7 @@ import org.commonjava.indy.service.repository.data.StoreDataManager;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;

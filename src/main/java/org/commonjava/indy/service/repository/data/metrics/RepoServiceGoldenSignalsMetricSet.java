@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/service-parent)
+ * Copyright (C) 2020 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,21 @@
  */
 package org.commonjava.indy.service.repository.data.metrics;
 
-public interface Metric
+import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
+
+import javax.enterprise.context.ApplicationScoped;
+import java.util.Collection;
+import java.util.List;
+
+import static org.commonjava.indy.service.repository.data.metrics.RepoServiceTrafficClassifier.FN_REPO_MGMT;
+
+@ApplicationScoped
+public class RepoServiceGoldenSignalsMetricSet
+        extends GoldenSignalsMetricSet
 {
+    @Override
+    protected Collection<String> getFunctions()
+    {
+        return List.of( FN_REPO_MGMT );
+    }
 }

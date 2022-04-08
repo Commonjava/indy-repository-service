@@ -15,17 +15,16 @@
  */
 package org.commonjava.indy.service.repository.data.infinispan;
 
-import org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager;
-import org.commonjava.indy.service.repository.data.metrics.NameUtils;
 import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.commonjava.indy.service.repository.data.metrics.NameUtils.name;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 public class BasicCacheHandle<K, V>
 {

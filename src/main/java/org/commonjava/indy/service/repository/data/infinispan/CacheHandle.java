@@ -16,10 +16,10 @@
 package org.commonjava.indy.service.repository.data.infinispan;
 
 import org.apache.commons.lang3.StringUtils;
-import org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import java.util.function.Function;
 import java.util.function.Supplier;

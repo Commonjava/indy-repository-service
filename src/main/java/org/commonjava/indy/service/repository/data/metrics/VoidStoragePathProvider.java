@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/service-parent)
+ * Copyright (C) 2022 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,19 @@
  */
 package org.commonjava.indy.service.repository.data.metrics;
 
-import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import org.commonjava.o11yphant.metrics.system.StoragePathProvider;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
 
-@InterceptorBinding
-@Target( { METHOD, TYPE } )
-@Retention( RUNTIME )
-public @interface MetricWrapper
+/**
+ * Used to provide storage path in {@link org.commonjava.o11yphant.metrics.system.SystemGaugesSet} to monitor
+ * storage space usage. Repository service don't need to monitor this so return null.
+ */
+@ApplicationScoped
+public class VoidStoragePathProvider implements StoragePathProvider
 {
+    public File getStoragePath(){
+        return null;
+    }
 }

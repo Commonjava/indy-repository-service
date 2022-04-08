@@ -16,13 +16,12 @@
 package org.commonjava.indy.service.repository.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jnr.ffi.annotations.In;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.service.repository.config.MetricsConfiguration;
-import org.commonjava.indy.service.repository.data.metrics.DefaultMetricsManager;
 import org.commonjava.indy.service.repository.exception.IndyWorkflowException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
