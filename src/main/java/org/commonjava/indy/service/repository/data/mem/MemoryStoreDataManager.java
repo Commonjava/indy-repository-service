@@ -156,13 +156,19 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType )
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page )
     {
         return stores.values()
                      .stream()
                      .filter( item -> packageType.equals( item.getPackageType() ) && storeType.equals(
                              item.getType() ) )
                      .collect( Collectors.toSet() );
+    }
+
+    @Override
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType )
+    {
+        return getArtifactStoresByPkgAndType( packageType, storeType, "" );
     }
 
     @Override

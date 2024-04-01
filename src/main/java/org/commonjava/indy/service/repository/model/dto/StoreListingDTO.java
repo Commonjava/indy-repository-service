@@ -26,12 +26,18 @@ import java.util.List;
 
 @Schema( type = SchemaType.OBJECT, discriminatorProperty = "type", description = "List of artifact store definitions" )
 public class StoreListingDTO<T extends ArtifactStore>
-        implements Iterable<T>
+                implements Iterable<T>
 {
 
     @JsonProperty
     @Schema( implementation = ArtifactStore.class, description = "The store definition list", required = true )
     private List<T> items;
+
+    @JsonProperty( "current_page" )
+    private String currentPage;
+
+    @JsonProperty( "next_page" )
+    private String nextPage;
 
     public StoreListingDTO()
     {
@@ -40,6 +46,13 @@ public class StoreListingDTO<T extends ArtifactStore>
     public StoreListingDTO( final List<T> items )
     {
         this.items = items;
+    }
+
+    public StoreListingDTO( final List<T> items, final String currentPage, final String nextPage )
+    {
+        this.items = items;
+        this.currentPage = currentPage;
+        this.nextPage = nextPage;
     }
 
     public List<T> getItems()
@@ -57,6 +70,18 @@ public class StoreListingDTO<T extends ArtifactStore>
     {
         final StringBuilder sb = new StringBuilder();
         sb.append( "StoreListingDTO[" );
+        if ( !currentPage.isEmpty() )
+        {
+            sb.append( "\ncurrentPage=" ).append( currentPage );
+        }
+        if ( !nextPage.isEmpty() )
+        {
+            sb.append( "\nnextPage=" ).append( nextPage );
+        }
+        if ( !currentPage.isEmpty() || !nextPage.isEmpty() )
+        {
+            sb.append( "\n [" );
+        }
         if ( items == null || items.isEmpty() )
         {
             sb.append( "NO STORES" );
@@ -68,7 +93,10 @@ public class StoreListingDTO<T extends ArtifactStore>
                 sb.append( "\n  " ).append( item );
             }
         }
-
+        if ( !currentPage.isEmpty() || !nextPage.isEmpty() )
+        {
+            sb.append( "\n ]" );
+        }
         sb.append( "\n]" );
         return sb.toString();
     }
@@ -79,4 +107,23 @@ public class StoreListingDTO<T extends ArtifactStore>
         return getItems().iterator();
     }
 
+    public String getCurrentPage()
+    {
+        return currentPage;
+    }
+
+    public void setCurrentPage( String currentPage )
+    {
+        this.currentPage = currentPage;
+    }
+
+    public String getNextPage()
+    {
+        return nextPage;
+    }
+
+    public void setNextPage( String nextPage )
+    {
+        this.nextPage = nextPage;
+    }
 }

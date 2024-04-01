@@ -16,6 +16,7 @@
 package org.commonjava.indy.service.repository.data.cassandra;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -142,17 +143,40 @@ public class CassandraStoreQuery
         return toDtxArtifactStore( result.one() );
     }
 
-    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
+    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type, String page )
     {
-
         BoundStatement bound =
-                preparedArtifactStoresQueryByKeys.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
+                        preparedArtifactStoresQueryByKeys.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
+
+        if (!page.isEmpty()) {
+            PagingState currentPage = PagingState.fromString( page );
+            bound.setPagingState( currentPage );
+        }
+
         ResultSet result = session.execute( bound );
 
+        PagingState nextPage = result.getExecutionInfo().getPagingState();
+        int remaining = result.getAvailableWithoutFetching();
+
+        if (!page.isEmpty()) {
+            remaining = Math.min( remaining, config.cassandraPageSize );
+        }
+
         Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
-        result.forEach( row -> dtxArtifactStoreSet.add( toDtxArtifactStore( row ) ) );
+        for (Row row: result)
+        {
+            dtxArtifactStoreSet.add( toDtxArtifactStore( row ) );
+            if (--remaining == 0) {
+                break;
+            }
+        }
 
         return dtxArtifactStoreSet;
+    }
+
+    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
+    {
+        return getArtifactStoresByPkgAndType( packageType, type, "" );
     }
 
     public Set<DtxArtifactStore> getAllArtifactStores()

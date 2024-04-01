@@ -184,15 +184,22 @@ public class CassandraStoreDataManager
     }
 
     @Override
-    public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type )
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type, String page )
     {
 
         logger.trace( "Get stores: {}/{}", pkg, type );
 
-        Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
+        Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type, page );
         Set<ArtifactStore> storeSet = new HashSet<>();
         dtxArtifactStoreSet.forEach( dtxArtifactStore -> storeSet.add( toArtifactStore( dtxArtifactStore ) ) );
         return storeSet;
+    }
+
+    @Override
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type )
+    {
+
+        return getArtifactStoresByPkgAndType( pkg, type, "" );
     }
 
     @Override

@@ -67,6 +67,26 @@ public class MockAdminController
     }
 
     @Override
+    public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type, String page )
+                    throws IndyWorkflowException
+    {
+        if ( MAVEN_PKG_KEY.equals( packageType ) )
+        {
+            if ( type == StoreType.remote )
+            {
+                RemoteRepository repo1 = new RemoteRepository( MAVEN_PKG_KEY, "test1", "http://repo.test1" );
+                RemoteRepository repo2 = new RemoteRepository( MAVEN_PKG_KEY, "test2", "http://repo.test2" );
+                return Arrays.asList( repo1, repo2 );
+            }
+            if ( type == StoreType.hosted )
+            {
+                return Collections.emptyList();
+            }
+        }
+        throw new IndyWorkflowException( Response.Status.NOT_FOUND.getStatusCode(), "Not found" );
+    }
+
+    @Override
     public ArtifactStore get( final StoreKey key )
     {
         if ( StoreKey.fromString( "maven:remote:exists" ).equals( key ) )

@@ -165,4 +165,6 @@ public interface StoreDataManager
 
     Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType );
 
+    Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page );
+
 }

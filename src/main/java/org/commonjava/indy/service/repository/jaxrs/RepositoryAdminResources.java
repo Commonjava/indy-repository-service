@@ -316,7 +316,46 @@ public class RepositoryAdminResources
                             @PathParam( "packageType" ) String packageType,
                             @Parameter( name = "type", in = PATH, description = "The type of the repository.",
                                         content = @Content( schema = @Schema( implementation = StoreType.class ) ),
-                                        required = true ) @PathParam( "type" ) String type )
+                                        required = true ) @PathParam( "type" ) String type,
+                            @QueryParam( "page") String page
+    )
+    {
+
+        final StoreType st = StoreType.get( type );
+
+        Response response;
+        try
+        {
+            final List<ArtifactStore> stores = adminController.getAllOfType( packageType, st, page );
+
+            logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
+
+            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( stores );
+
+            response = responseHelper.formatOkResponseWithJsonEntity( dto );
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            response = responseHelper.formatResponse( e );
+        }
+
+        return response;
+    }
+
+
+    @Operation( description = "Retrieve the definitions of all artifact stores of a given type on the system" )
+    @APIResponse( responseCode = "200",
+                    content = @Content( schema = @Schema( implementation = StoreListingDTO.class ) ),
+                    description = "The store definitions" )
+    @GET
+    @Produces( APPLICATION_JSON )
+    public Response getAllPaginated( final @Parameter(
+                    description = "Filter only stores that support the package type (eg. maven, npm). NOTE: '_all' returns all." )
+                            @PathParam( "packageType" ) String packageType,
+                            @Parameter( name = "type", in = PATH, description = "The type of the repository.",
+                                            content = @Content( schema = @Schema( implementation = StoreType.class ) ),
+                                            required = true ) @PathParam( "type" ) String type )
     {
 
         final StoreType st = StoreType.get( type );

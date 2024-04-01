@@ -113,15 +113,16 @@ public class AdminController
         }
     }
 
-    public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type )
-            throws IndyWorkflowException
+
+    public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type, String page )
+                    throws IndyWorkflowException
     {
         try
         {
             ArtifactStoreQuery<ArtifactStore> query = storeManager.query().storeTypes( type );
             if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
             {
-                return new ArrayList<>( storeManager.getArtifactStoresByPkgAndType( packageType, type ) );
+                return new ArrayList<>( storeManager.getArtifactStoresByPkgAndType( packageType, type, page ) );
             }
             else
             {
@@ -133,6 +134,13 @@ public class AdminController
             throw new IndyWorkflowException( INTERNAL_SERVER_ERROR.getStatusCode(), "Failed to list: {}. Reason: {}", e,
                                              type, e.getMessage() );
         }
+    }
+
+
+    public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type )
+            throws IndyWorkflowException
+    {
+        return getAllOfType( packageType, type, "" );
     }
 
     public List<ArtifactStore> getAllStores()
