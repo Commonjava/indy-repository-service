@@ -25,6 +25,7 @@ import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.RemoteRepository;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.commonjava.indy.service.repository.model.dto.StoreListingDTO;
 import org.commonjava.indy.service.repository.util.jackson.MapperUtil;
 import org.commonjava.indy.service.security.common.SecurityManager;
@@ -59,6 +60,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,11 +328,13 @@ public class RepositoryAdminResources
         Response response;
         try
         {
-            final List<ArtifactStore> stores = adminController.getAllOfType( packageType, st, page );
+            final ListArtifactStoreDTO result = adminController.getAllOfType( packageType, st, page );
 
-            logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
+            logger.info( "Returning listing for page {} containing stores:\n\t{}", result.getCurrentPage(),
+                         new JoinString( "\n\t", result.getItems() ) );
 
-            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( stores );
+            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( new ArrayList<>(result.getItems()), result.getCurrentPage(),
+                                                                              result.getNextPage() );
 
             response = responseHelper.formatOkResponseWithJsonEntity( dto );
         }

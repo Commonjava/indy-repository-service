@@ -23,6 +23,7 @@ import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
 import org.commonjava.indy.service.repository.exception.IndyDataException;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 
 import java.util.Collection;
 import java.util.Map;
@@ -165,6 +166,6 @@ public interface StoreDataManager
 
     Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType );
 
-    Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page );
+    ListArtifactStoreDTO getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page );
 
 }

@@ -23,6 +23,7 @@ import org.commonjava.indy.service.repository.change.event.StoreEventDispatcher;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,19 +157,21 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page )
+    public ListArtifactStoreDTO getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page )
     {
-        return stores.values()
-                     .stream()
-                     .filter( item -> packageType.equals( item.getPackageType() ) && storeType.equals(
-                             item.getType() ) )
-                     .collect( Collectors.toSet() );
+        Set<ArtifactStore> resultStores = stores.values()
+                                                .stream()
+                                                .filter( item -> packageType.equals( item.getPackageType() ) && storeType.equals(
+                                                                item.getType() ) )
+                                                .collect( Collectors.toSet() );
+        return new ListArtifactStoreDTO( resultStores);
     }
 
     @Override
     public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType )
     {
-        return getArtifactStoresByPkgAndType( packageType, storeType, "" );
+        ListArtifactStoreDTO result = getArtifactStoresByPkgAndType( packageType, storeType, "" );
+        return result.getItems();
     }
 
     @Override

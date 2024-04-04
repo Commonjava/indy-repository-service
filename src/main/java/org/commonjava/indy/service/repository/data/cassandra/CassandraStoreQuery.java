@@ -25,6 +25,7 @@ import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListDtxArtifactStoreDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +144,7 @@ public class CassandraStoreQuery
         return toDtxArtifactStore( result.one() );
     }
 
-    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type, String page )
+    public ListDtxArtifactStoreDTO getArtifactStoresByPkgAndType( String packageType, StoreType type, String page )
     {
         BoundStatement bound =
                         preparedArtifactStoresQueryByKeys.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
@@ -171,12 +172,13 @@ public class CassandraStoreQuery
             }
         }
 
-        return dtxArtifactStoreSet;
+        return new ListDtxArtifactStoreDTO( dtxArtifactStoreSet, page, nextPage.toString() );
     }
 
     public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
     {
-        return getArtifactStoresByPkgAndType( packageType, type, "" );
+        ListDtxArtifactStoreDTO result = getArtifactStoresByPkgAndType( packageType, type, "" );
+        return result.getItems();
     }
 
     public Set<DtxArtifactStore> getAllArtifactStores()

@@ -31,6 +31,8 @@ import org.commonjava.indy.service.repository.model.HostedRepository;
 import org.commonjava.indy.service.repository.model.RemoteRepository;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
+import org.commonjava.indy.service.repository.model.dto.ListDtxArtifactStoreDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,22 +186,22 @@ public class CassandraStoreDataManager
     }
 
     @Override
-    public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type, String page )
+    public ListArtifactStoreDTO getArtifactStoresByPkgAndType( final String pkg, final StoreType type, String page )
     {
 
         logger.trace( "Get stores: {}/{}", pkg, type );
-
-        Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type, page );
+        ListDtxArtifactStoreDTO result = storeQuery.getArtifactStoresByPkgAndType( pkg, type, page );
+        Set<DtxArtifactStore> dtxArtifactStoreSet = result.getItems();
         Set<ArtifactStore> storeSet = new HashSet<>();
         dtxArtifactStoreSet.forEach( dtxArtifactStore -> storeSet.add( toArtifactStore( dtxArtifactStore ) ) );
-        return storeSet;
+        return new ListArtifactStoreDTO( storeSet, result.getCurrentPage(), result.getNextPage());
     }
 
     @Override
     public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type )
     {
-
-        return getArtifactStoresByPkgAndType( pkg, type, "" );
+        ListArtifactStoreDTO result = getArtifactStoresByPkgAndType( pkg, type, "" );
+        return result.getItems();
     }
 
     @Override

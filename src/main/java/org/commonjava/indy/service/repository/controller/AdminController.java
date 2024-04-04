@@ -30,6 +30,7 @@ import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.RemoteRepository;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
@@ -114,7 +116,7 @@ public class AdminController
     }
 
 
-    public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type, String page )
+    public ListArtifactStoreDTO getAllOfType( final String packageType, final StoreType type, String page )
                     throws IndyWorkflowException
     {
         try
@@ -122,11 +124,12 @@ public class AdminController
             ArtifactStoreQuery<ArtifactStore> query = storeManager.query().storeTypes( type );
             if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
             {
-                return new ArrayList<>( storeManager.getArtifactStoresByPkgAndType( packageType, type, page ) );
+                return storeManager.getArtifactStoresByPkgAndType( packageType, type, page );
             }
             else
             {
-                return query.getAllByDefaultPackageTypes();
+                List<ArtifactStore> result = query.getAllByDefaultPackageTypes();
+                return new ListArtifactStoreDTO( new HashSet<>(result) );
             }
         }
         catch ( final IndyDataException e )
@@ -140,7 +143,8 @@ public class AdminController
     public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type )
             throws IndyWorkflowException
     {
-        return getAllOfType( packageType, type, "" );
+        ListArtifactStoreDTO result = getAllOfType( packageType, type, "" );
+        return new ArrayList<>(result.getItems());
     }
 
     public List<ArtifactStore> getAllStores()
