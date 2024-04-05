@@ -83,6 +83,12 @@ public interface StoreDataManager
             throws IndyDataException;
 
     /**
+     * Return the full list of {@link ArtifactStore} instances of a given {@link StoreType} (hosted, remote, or group) available on the system.
+     */
+    ListArtifactStoreDTO getAllArtifactStores(String page)
+                    throws IndyDataException;
+
+    /**
      * Return the {@link ArtifactStore} instances as a {@link Stream}.
      */
     Stream<ArtifactStore> streamArtifactStores()

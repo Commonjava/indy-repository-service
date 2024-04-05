@@ -313,14 +313,15 @@ public class RepositoryQueryResources
     @Path( "/endpoints/{packageType}" )
     @GET
     @Produces( APPLICATION_JSON )
-    public Response getEndpoints( @PathParam( "packageType" ) final String pkgType, @Context final UriInfo uriInfo )
+    public Response getEndpoints( @PathParam( "packageType" ) final String pkgType, @QueryParam( "page") String page,
+                                  @Context final UriInfo uriInfo )
     {
         Response response;
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder().path( API_PREFIX ).build().toString();
 
-            final EndpointViewListing listing = queryController.getEndpointsListing( pkgType, baseUri, uriFormatter );
+            final EndpointViewListing listing = queryController.getEndpointsListing( pkgType, baseUri, uriFormatter, page );
             response = responseHelper.formatOkResponseWithJsonEntity( listing );
 
             logger.info( "\n\n\n\n\n\n{} Sent all-endpoints:\n\n{}\n\n\n\n\n\n\n", new Date(), listing );

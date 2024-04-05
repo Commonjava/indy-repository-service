@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.service.repository.jaxrs.version;
 
+import jakarta.ws.rs.QueryParam;
 import org.commonjava.indy.service.repository.controller.StatsController;
 import org.commonjava.indy.service.repository.exception.IndyWorkflowException;
 import org.commonjava.indy.service.repository.jaxrs.ResponseHelper;
@@ -114,14 +115,14 @@ public class StatsHandler
     @Path( "/all-endpoints" )
     @GET
     @Produces( APPLICATION_JSON )
-    public Response getAllEndpoints( @Context final UriInfo uriInfo )
+    public Response getAllEndpoints( @QueryParam( "page") String page, @Context final UriInfo uriInfo )
     {
         Response response;
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder().path( Constants.API_PREFIX ).build().toString();
 
-            final EndpointViewListing listing = statsController.getEndpointsListing( baseUri, uriFormatter );
+            final EndpointViewListing listing = statsController.getEndpointsListing( baseUri, uriFormatter, page );
             response = responseHelper.formatOkResponseWithJsonEntity( listing );
 
             logger.info( "\n\n\n\n\n\n{} Sent all-endpoints:\n\n{}\n\n\n\n\n\n\n", new Date(), listing );

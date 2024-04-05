@@ -122,6 +122,12 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    public ListArtifactStoreDTO getAllArtifactStores(String page)
+    {
+        return new ListArtifactStoreDTO(new HashSet<>( stores.values() ), page, "");
+    }
+
+    @Override
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         return new HashMap<>( stores );

@@ -22,6 +22,7 @@ import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.dto.EndpointView;
 import org.commonjava.indy.service.repository.model.dto.EndpointViewListing;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.commonjava.indy.service.repository.model.version.Versioning;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -57,13 +58,14 @@ public class StatsController
         return versioning;
     }
 
-    public EndpointViewListing getEndpointsListing( final String baseUri, final JaxRsUriFormatter uriFormatter )
-            throws IndyWorkflowException
+    public EndpointViewListing getEndpointsListing( final String baseUri, final JaxRsUriFormatter uriFormatter, final String page )
+                    throws IndyWorkflowException
     {
         final List<ArtifactStore> stores;
         try
         {
-            stores = new ArrayList<>( dataManager.getAllArtifactStores() );
+            ListArtifactStoreDTO result = dataManager.getAllArtifactStores(page);
+            stores = new ArrayList<>( result.getItems() );
         }
         catch ( final IndyDataException e )
         {
@@ -87,6 +89,12 @@ public class StatsController
         }
 
         return new EndpointViewListing( points );
+    }
+
+    public EndpointViewListing getEndpointsListing( final String baseUri, final JaxRsUriFormatter uriFormatter )
+            throws IndyWorkflowException
+    {
+        return getEndpointsListing( baseUri, uriFormatter, "" );
     }
 
     public Map<String, List<String>> getAllStoreKeys()

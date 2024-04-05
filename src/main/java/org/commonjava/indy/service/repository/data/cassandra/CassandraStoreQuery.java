@@ -181,16 +181,40 @@ public class CassandraStoreQuery
         return result.getItems();
     }
 
-    public Set<DtxArtifactStore> getAllArtifactStores()
+    public ListDtxArtifactStoreDTO getAllArtifactStores( String page )
     {
-
         BoundStatement bound = preparedArtifactStoresQuery.bind();
+
+        if (!page.isEmpty()) {
+            PagingState currentPage = PagingState.fromString( page );
+            bound.setPagingState( currentPage );
+        }
+
         ResultSet result = session.execute( bound );
 
-        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
-        result.forEach( row -> dtxArtifactStoreSet.add( toDtxArtifactStore( row ) ) );
+        PagingState nextPage = result.getExecutionInfo().getPagingState();
+        int remaining = result.getAvailableWithoutFetching();
 
-        return dtxArtifactStoreSet;
+        if (!page.isEmpty()) {
+            remaining = Math.min( remaining, config.cassandraPageSize );
+        }
+
+        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
+        for (Row row: result)
+        {
+            dtxArtifactStoreSet.add( toDtxArtifactStore( row ) );
+            if (--remaining == 0) {
+                break;
+            }
+        }
+
+        return new ListDtxArtifactStoreDTO( dtxArtifactStoreSet, page, nextPage.toString() );
+    }
+
+    public Set<DtxArtifactStore> getAllArtifactStores()
+    {
+        ListDtxArtifactStoreDTO result = getAllArtifactStores("");
+        return result.getItems();
     }
 
     public Boolean isEmpty()

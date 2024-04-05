@@ -28,6 +28,7 @@ import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.commonjava.indy.service.repository.model.dto.EndpointView;
 import org.commonjava.indy.service.repository.model.dto.EndpointViewListing;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.commonjava.indy.service.repository.util.JaxRsUriFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -257,13 +258,16 @@ public class QueryController
     }
 
     public EndpointViewListing getEndpointsListing( final String pkgType, final String baseUri,
-                                                    final JaxRsUriFormatter uriFormatter )
+                                                    final JaxRsUriFormatter uriFormatter, final String page )
             throws IndyWorkflowException
     {
         List<ArtifactStore> stores;
+        String nextPage = "";
         try
         {
-            stores = new ArrayList<>( storeManager.getAllArtifactStores() );
+            ListArtifactStoreDTO result = storeManager.getAllArtifactStores(page);
+            nextPage = result.getNextPage();
+            stores = new ArrayList<>( result.getItems() );
             if ( StringUtils.isNotBlank( pkgType ) && !"all".equals( pkgType ) && isValidPackageType( pkgType ) )
             {
                 stores = stores.stream()
@@ -292,7 +296,21 @@ public class QueryController
             }
         }
 
-        return new EndpointViewListing( points );
+        EndpointViewListing result = new EndpointViewListing( points );
+        result.setCurrentPage( page );
+
+        if (!nextPage.isEmpty()) {
+            result.setNextPage( nextPage );
+        }
+
+        return result;
+    }
+
+    public EndpointViewListing getEndpointsListing( final String pkgType, final String baseUri,
+                                                    final JaxRsUriFormatter uriFormatter )
+                    throws IndyWorkflowException
+    {
+        return getEndpointsListing( pkgType, baseUri, uriFormatter, "" );
     }
 
     public Map<String, List<String>> getStoreKeysByPackageType( final String pkgType )

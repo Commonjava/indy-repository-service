@@ -143,10 +143,19 @@ public class CassandraStoreDataManager
     //    @WithSpan
     public Set<ArtifactStore> getAllArtifactStores()
     {
-        Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getAllArtifactStores();
+        ListArtifactStoreDTO result = getAllArtifactStores("");
+        return result.getItems();
+    }
+
+    @Override
+    //    @WithSpan
+    public ListArtifactStoreDTO getAllArtifactStores(String page)
+    {
+        ListDtxArtifactStoreDTO result = storeQuery.getAllArtifactStores(page);
+        Set<DtxArtifactStore> dtxArtifactStoreSet = result.getItems();
         Set<ArtifactStore> artifactStoreSet = new HashSet<>();
         dtxArtifactStoreSet.forEach( dtxArtifactStore -> artifactStoreSet.add( toArtifactStore( dtxArtifactStore ) ) );
-        return artifactStoreSet;
+        return new ListArtifactStoreDTO(artifactStoreSet, page, result.getNextPage());
     }
 
     @Override
