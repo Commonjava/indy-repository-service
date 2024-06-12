@@ -25,6 +25,7 @@ import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.RemoteRepository;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.commonjava.indy.service.repository.model.dto.StoreListingDTO;
 import org.commonjava.indy.service.repository.util.jackson.MapperUtil;
 import org.commonjava.indy.service.security.common.SecurityManager;
@@ -59,6 +60,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -316,7 +318,48 @@ public class RepositoryAdminResources
                             @PathParam( "packageType" ) String packageType,
                             @Parameter( name = "type", in = PATH, description = "The type of the repository.",
                                         content = @Content( schema = @Schema( implementation = StoreType.class ) ),
-                                        required = true ) @PathParam( "type" ) String type )
+                                        required = true ) @PathParam( "type" ) String type,
+                            @QueryParam( "page") String page
+    )
+    {
+
+        final StoreType st = StoreType.get( type );
+
+        Response response;
+        try
+        {
+            final ListArtifactStoreDTO result = adminController.getAllOfType( packageType, st, page );
+
+            logger.info( "Returning listing for page {} containing stores:\n\t{}", result.getCurrentPage(),
+                         new JoinString( "\n\t", result.getItems() ) );
+
+            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( new ArrayList<>(result.getItems()), result.getCurrentPage(),
+                                                                              result.getNextPage() );
+
+            response = responseHelper.formatOkResponseWithJsonEntity( dto );
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            response = responseHelper.formatResponse( e );
+        }
+
+        return response;
+    }
+
+
+    @Operation( description = "Retrieve the definitions of all artifact stores of a given type on the system" )
+    @APIResponse( responseCode = "200",
+                    content = @Content( schema = @Schema( implementation = StoreListingDTO.class ) ),
+                    description = "The store definitions" )
+    @GET
+    @Produces( APPLICATION_JSON )
+    public Response getAllPaginated( final @Parameter(
+                    description = "Filter only stores that support the package type (eg. maven, npm). NOTE: '_all' returns all." )
+                            @PathParam( "packageType" ) String packageType,
+                            @Parameter( name = "type", in = PATH, description = "The type of the repository.",
+                                            content = @Content( schema = @Schema( implementation = StoreType.class ) ),
+                                            required = true ) @PathParam( "type" ) String type )
     {
 
         final StoreType st = StoreType.get( type );

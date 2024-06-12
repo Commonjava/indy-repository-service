@@ -16,6 +16,7 @@
 package org.commonjava.indy.service.repository.data.cassandra;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -24,6 +25,7 @@ import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListDtxArtifactStoreDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,29 +144,77 @@ public class CassandraStoreQuery
         return toDtxArtifactStore( result.one() );
     }
 
-    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
+    public ListDtxArtifactStoreDTO getArtifactStoresByPkgAndType( String packageType, StoreType type, String page )
     {
-
         BoundStatement bound =
-                preparedArtifactStoresQueryByKeys.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
+                        preparedArtifactStoresQueryByKeys.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
+
+        if (!page.isEmpty()) {
+            PagingState currentPage = PagingState.fromString( page );
+            bound.setPagingState( currentPage );
+        }
+
         ResultSet result = session.execute( bound );
 
-        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
-        result.forEach( row -> dtxArtifactStoreSet.add( toDtxArtifactStore( row ) ) );
+        PagingState nextPage = result.getExecutionInfo().getPagingState();
+        int remaining = result.getAvailableWithoutFetching();
 
-        return dtxArtifactStoreSet;
+        if (!page.isEmpty()) {
+            remaining = Math.min( remaining, config.cassandraPageSize );
+        }
+
+        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
+        for (Row row: result)
+        {
+            dtxArtifactStoreSet.add( toDtxArtifactStore( row ) );
+            if (--remaining == 0) {
+                break;
+            }
+        }
+
+        return new ListDtxArtifactStoreDTO( dtxArtifactStoreSet, page, nextPage.toString() );
+    }
+
+    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
+    {
+        ListDtxArtifactStoreDTO result = getArtifactStoresByPkgAndType( packageType, type, "" );
+        return result.getItems();
+    }
+
+    public ListDtxArtifactStoreDTO getAllArtifactStores( String page )
+    {
+        BoundStatement bound = preparedArtifactStoresQuery.bind();
+
+        if (!page.isEmpty()) {
+            PagingState currentPage = PagingState.fromString( page );
+            bound.setPagingState( currentPage );
+        }
+
+        ResultSet result = session.execute( bound );
+
+        PagingState nextPage = result.getExecutionInfo().getPagingState();
+        int remaining = result.getAvailableWithoutFetching();
+
+        if (!page.isEmpty()) {
+            remaining = Math.min( remaining, config.cassandraPageSize );
+        }
+
+        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
+        for (Row row: result)
+        {
+            dtxArtifactStoreSet.add( toDtxArtifactStore( row ) );
+            if (--remaining == 0) {
+                break;
+            }
+        }
+
+        return new ListDtxArtifactStoreDTO( dtxArtifactStoreSet, page, nextPage.toString() );
     }
 
     public Set<DtxArtifactStore> getAllArtifactStores()
     {
-
-        BoundStatement bound = preparedArtifactStoresQuery.bind();
-        ResultSet result = session.execute( bound );
-
-        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
-        result.forEach( row -> dtxArtifactStoreSet.add( toDtxArtifactStore( row ) ) );
-
-        return dtxArtifactStoreSet;
+        ListDtxArtifactStoreDTO result = getAllArtifactStores("");
+        return result.getItems();
     }
 
     public Boolean isEmpty()

@@ -24,6 +24,7 @@ import org.commonjava.indy.service.repository.model.HostedRepository;
 import org.commonjava.indy.service.repository.model.RemoteRepository;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.junit.jupiter.api.Test;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -31,6 +32,7 @@ import jakarta.enterprise.inject.Alternative;
 import jakarta.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.commonjava.indy.service.repository.model.pkg.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -61,6 +63,26 @@ public class MockAdminController
             if ( type == StoreType.hosted )
             {
                 return Collections.emptyList();
+            }
+        }
+        throw new IndyWorkflowException( Response.Status.NOT_FOUND.getStatusCode(), "Not found" );
+    }
+
+    @Override
+    public ListArtifactStoreDTO getAllOfType( final String packageType, final StoreType type, String page )
+                    throws IndyWorkflowException
+    {
+        if ( MAVEN_PKG_KEY.equals( packageType ) )
+        {
+            if ( type == StoreType.remote )
+            {
+                RemoteRepository repo1 = new RemoteRepository( MAVEN_PKG_KEY, "test1", "http://repo.test1" );
+                RemoteRepository repo2 = new RemoteRepository( MAVEN_PKG_KEY, "test2", "http://repo.test2" );
+                return new ListArtifactStoreDTO( new HashSet<>(Arrays.asList( repo1, repo2 )));
+            }
+            if ( type == StoreType.hosted )
+            {
+                return new ListArtifactStoreDTO( new HashSet<>(Collections.emptyList()));
             }
         }
         throw new IndyWorkflowException( Response.Status.NOT_FOUND.getStatusCode(), "Not found" );

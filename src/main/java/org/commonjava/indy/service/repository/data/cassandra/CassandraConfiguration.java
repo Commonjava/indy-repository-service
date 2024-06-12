@@ -34,6 +34,10 @@ public class CassandraConfiguration
     Boolean enabled;
 
     @Inject
+    @ConfigProperty( name = "cassandra.page_size", defaultValue = "5000" )
+    int cassandraPageSize;
+
+    @Inject
     @ConfigProperty( name = "cassandra.host", defaultValue = "localhost" )
     String cassandraHost;
 

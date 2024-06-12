@@ -23,6 +23,7 @@ import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
 import org.commonjava.indy.service.repository.exception.IndyDataException;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 
 import java.util.Collection;
 import java.util.Map;
@@ -80,6 +81,12 @@ public interface StoreDataManager
      */
     Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException;
+
+    /**
+     * Return the full list of {@link ArtifactStore} instances of a given {@link StoreType} (hosted, remote, or group) available on the system.
+     */
+    ListArtifactStoreDTO getAllArtifactStores(String page)
+                    throws IndyDataException;
 
     /**
      * Return the {@link ArtifactStore} instances as a {@link Stream}.
@@ -164,5 +171,7 @@ public interface StoreDataManager
     Set<Group> affectedBy( Collection<StoreKey> keys, EventMetadata eventMetadata ) throws IndyDataException;
 
     Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType );
+
+    ListArtifactStoreDTO getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page );
 
 }

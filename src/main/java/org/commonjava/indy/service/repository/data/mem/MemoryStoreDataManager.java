@@ -23,6 +23,7 @@ import org.commonjava.indy.service.repository.change.event.StoreEventDispatcher;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
+import org.commonjava.indy.service.repository.model.dto.ListArtifactStoreDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,6 +122,12 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    public ListArtifactStoreDTO getAllArtifactStores(String page)
+    {
+        return new ListArtifactStoreDTO(new HashSet<>( stores.values() ), page, "");
+    }
+
+    @Override
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         return new HashMap<>( stores );
@@ -156,13 +163,21 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    public ListArtifactStoreDTO getArtifactStoresByPkgAndType( String packageType, StoreType storeType, String page )
+    {
+        Set<ArtifactStore> resultStores = stores.values()
+                                                .stream()
+                                                .filter( item -> packageType.equals( item.getPackageType() ) && storeType.equals(
+                                                                item.getType() ) )
+                                                .collect( Collectors.toSet() );
+        return new ListArtifactStoreDTO( resultStores);
+    }
+
+    @Override
     public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType )
     {
-        return stores.values()
-                     .stream()
-                     .filter( item -> packageType.equals( item.getPackageType() ) && storeType.equals(
-                             item.getType() ) )
-                     .collect( Collectors.toSet() );
+        ListArtifactStoreDTO result = getArtifactStoresByPkgAndType( packageType, storeType, "" );
+        return result.getItems();
     }
 
     @Override

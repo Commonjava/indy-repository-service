@@ -34,6 +34,10 @@ public class EndpointViewListing
 
     private List<EndpointView> items;
 
+    private String currentPage;
+
+    private String nextPage;
+
     public EndpointViewListing()
     {
     }
@@ -42,6 +46,14 @@ public class EndpointViewListing
     {
         Collections.sort( items );
         this.items = items;
+    }
+
+    public EndpointViewListing( final List<EndpointView> items, final String currentPage, final String nextPage)
+    {
+        Collections.sort( items );
+        this.items = items;
+        this.currentPage = currentPage;
+        this.nextPage = nextPage;
     }
 
     public List<EndpointView> getItems()
@@ -60,4 +72,23 @@ public class EndpointViewListing
         this.items = items;
     }
 
+    public String getCurrentPage()
+    {
+        return currentPage;
+    }
+
+    public void setCurrentPage( String currentPage )
+    {
+        this.currentPage = currentPage;
+    }
+
+    public String getNextPage()
+    {
+        return nextPage;
+    }
+
+    public void setNextPage( String nextPage )
+    {
+        this.nextPage = nextPage;
+    }
 }
