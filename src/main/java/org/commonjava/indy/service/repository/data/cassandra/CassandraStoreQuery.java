@@ -20,6 +20,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.service.repository.model.StoreKey;
@@ -138,7 +139,7 @@ public class CassandraStoreQuery
         BoundStatement bound =
                 preparedSingleArtifactStoreQuery.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ),
                                                        CassandraStoreUtil.getHashPrefix( name ), name );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         return toDtxArtifactStore( result.one() );
     }
 
@@ -147,7 +148,7 @@ public class CassandraStoreQuery
 
         BoundStatement bound =
                 preparedArtifactStoresQueryByKeys.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
 
         Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
         result.forEach( row -> dtxArtifactStoreSet.add( toDtxArtifactStore( row ) ) );
@@ -159,7 +160,7 @@ public class CassandraStoreQuery
     {
 
         BoundStatement bound = preparedArtifactStoresQuery.bind();
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
 
         Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>();
         result.forEach( row -> dtxArtifactStoreSet.add( toDtxArtifactStore( row ) ) );
@@ -170,7 +171,7 @@ public class CassandraStoreQuery
     public Boolean isEmpty()
     {
         BoundStatement bound = preparedArtifactStoresQuery.bind();
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         return result.one() == null;
     }
 
@@ -182,7 +183,7 @@ public class CassandraStoreQuery
             BoundStatement bound =
                     preparedArtifactStoreDel.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ),
                                                    CassandraStoreUtil.getHashPrefix( name ), name );
-            session.execute( bound );
+            executeSession( bound );
         }
         return dtxArtifactStore;
     }
@@ -220,7 +221,7 @@ public class CassandraStoreQuery
     public DtxAffectedStore getAffectedStore( StoreKey key )
     {
         BoundStatement bound = preparedAffectedStoresQuery.bind( key.toString() );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         return toDtxAffectedStore( result.one() );
     }
 
@@ -246,7 +247,7 @@ public class CassandraStoreQuery
         increment.add( affected.toString() );
         bound.setSet( 0, increment );
         bound.setString( 1, storeKey.toString() );
-        session.execute( bound );
+        executeSession( bound );
     }
 
     public void removeAffectedBy( StoreKey storeKey, StoreKey affected )
@@ -257,13 +258,13 @@ public class CassandraStoreQuery
         reduction.add( affected.toString() );
         bound.setSet( 0, reduction );
         bound.setString( 1, storeKey.toString() );
-        session.execute( bound );
+        executeSession( bound );
     }
 
     public Boolean isAffectedEmpty()
     {
         BoundStatement bound = preparedAffectedStoreExistedQuery.bind();
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         return result.one() == null;
     }
 
@@ -273,7 +274,39 @@ public class CassandraStoreQuery
         if ( affectedStore != null )
         {
             BoundStatement bound = preparedAffectedStoreDel.bind( key.toString() );
-            session.execute( bound );
+            executeSession( bound );
         }
+    }
+
+    private ResultSet executeSession ( BoundStatement bind )
+    {
+        boolean exception = false;
+        ResultSet trackingRecord = null;
+        try
+        {
+            if ( session == null || session.isClosed() )
+            {
+                client.close();
+                client.init();
+                this.init();
+            }
+            trackingRecord = session.execute( bind );
+        }
+        catch ( NoHostAvailableException e )
+        {
+            exception = true;
+            logger.error( "Cannot connect to host, reconnect once more with new session.", e );
+        }
+        finally
+        {
+            if ( exception )
+            {
+                client.close();
+                client.init();
+                this.init();
+                trackingRecord = session.execute( bind );
+            }
+        }
+        return trackingRecord;
     }
 }

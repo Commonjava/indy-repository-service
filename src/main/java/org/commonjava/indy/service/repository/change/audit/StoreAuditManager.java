@@ -20,6 +20,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.apache.commons.lang3.StringUtils;
@@ -132,7 +133,7 @@ public class StoreAuditManager
     public List<DtxRepoOpsAuditRecord> getAuditLogByRepo( final String key, final int limit )
     {
         BoundStatement bound = preparedStoreAuditQueryByRepo.bind( key, limit );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
 
         List<DtxRepoOpsAuditRecord> records = new ArrayList<>();
         result.forEach( row -> records.add( toDtxRepoOpsAuditRecord( row ) ) );
@@ -143,7 +144,7 @@ public class StoreAuditManager
     public List<DtxRepoOpsAuditRecord> getAuditLogByRepoAndOps( final String key, final String ops, final int limit )
     {
         BoundStatement bound = preparedStoreAuditQueryByRepoAndOps.bind( key, ops, limit );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
 
         List<DtxRepoOpsAuditRecord> records = new ArrayList<>();
         result.forEach( row -> records.add( toDtxRepoOpsAuditRecord( row ) ) );
@@ -186,5 +187,37 @@ public class StoreAuditManager
         record.setOperation( row.getString( "operation" ) );
         record.setChangeContent( row.getString( "changecontent" ) );
         return record;
+    }
+
+    private ResultSet executeSession ( BoundStatement bind )
+    {
+        boolean exception = false;
+        ResultSet trackingRecord = null;
+        try
+        {
+            if ( session == null || session.isClosed() )
+            {
+                client.close();
+                client.init();
+                this.init();
+            }
+            trackingRecord = session.execute( bind );
+        }
+        catch ( NoHostAvailableException e )
+        {
+            exception = true;
+            logger.error( "Cannot connect to host, reconnect once more with new session.", e );
+        }
+        finally
+        {
+            if ( exception )
+            {
+                client.close();
+                client.init();
+                this.init();
+                trackingRecord = session.execute( bind );
+            }
+        }
+        return trackingRecord;
     }
 }
