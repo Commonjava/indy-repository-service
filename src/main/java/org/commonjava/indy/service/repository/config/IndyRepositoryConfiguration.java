@@ -50,6 +50,14 @@ public interface IndyRepositoryConfiguration
     @WithDefault( "false" )
     Boolean storeValidationEnabled();
 
+    @WithName( "storeValidator.req-connection-timeout" )
+    @WithDefault( "30000" )
+    Integer reqConnectionTimeout();
+
+    @WithName( "storeValidator.req-socket-timeout" )
+    @WithDefault( "30000" )
+    Integer reqSocketTimeout();
+
     @WithName( "remote.sslRequired" )
     @WithDefault( "false" )
     Boolean sslRequired();

@@ -190,8 +190,8 @@ public class DefaultStoreValidator
         countDownLatch.countDown();
         return executorService.submit( () -> {
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout( 30000 )
-                    .setSocketTimeout( 30000 )
+                    .setConnectTimeout( configuration.reqConnectionTimeout() )
+                    .setSocketTimeout( configuration.reqSocketTimeout() )
                     .build();
 
             CloseableHttpClient closeableHttpClient = HttpClientBuilder.create()
@@ -228,8 +228,8 @@ public class DefaultStoreValidator
         countDownLatch.countDown();
         return executorService.submit( () -> {
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout( 30000 )
-                    .setSocketTimeout( 30000 )
+                    .setConnectTimeout( configuration.reqConnectionTimeout() )
+                    .setSocketTimeout( configuration.reqSocketTimeout() )
                     .build();
 
             CloseableHttpClient closeableHttpClient = HttpClientBuilder.create()
