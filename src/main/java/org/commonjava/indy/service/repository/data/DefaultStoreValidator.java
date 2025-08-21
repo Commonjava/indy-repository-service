@@ -15,9 +15,11 @@
  */
 package org.commonjava.indy.service.repository.data;
 
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.commonjava.indy.service.repository.config.IndyRepositoryConfiguration;
@@ -57,7 +59,7 @@ public class DefaultStoreValidator
     //    @Inject
     //    @WeftManaged
     //    @ExecutorConfig( named = "store-validation", threads = 2, priority = 6 )
-    private final ExecutorService executorService = Executors.newFixedThreadPool( 2 );
+    private final ExecutorService executorService = Executors.newFixedThreadPool( 8 );
 
     @Inject
     IndyRepositoryConfiguration configuration;
@@ -187,12 +189,25 @@ public class DefaultStoreValidator
     {
         countDownLatch.countDown();
         return executorService.submit( () -> {
-            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout( configuration.reqConnectionTimeout() )
+                    .setSocketTimeout( configuration.reqSocketTimeout() )
+                    .build();
+
+            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create()
+                    .setDefaultRequestConfig( requestConfig )
+                    .build();
 
             try (CloseableHttpResponse response = closeableHttpClient.execute( httpGetTask ))
             {
                 LOGGER.warn( "=> Check HTTP GET Response code: " + response.getStatusLine().getStatusCode() );
                 return response.getStatusLine().getStatusCode();
+            }
+            catch ( ConnectTimeoutException te )
+            {
+                LOGGER.error(
+                        " => Not Successfull HTTP GET request from StoreValidatorRemote, \n => Exception: " + te );
+                throw new Exception( "Remote Repository not reachable", te );
             }
             catch ( IOException ioe )
             {
@@ -212,11 +227,25 @@ public class DefaultStoreValidator
     {
         countDownLatch.countDown();
         return executorService.submit( () -> {
-            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout( configuration.reqConnectionTimeout() )
+                    .setSocketTimeout( configuration.reqSocketTimeout() )
+                    .build();
+
+            CloseableHttpClient closeableHttpClient = HttpClientBuilder.create()
+                    .setDefaultRequestConfig( requestConfig )
+                    .build();
+
             try (CloseableHttpResponse response = closeableHttpClient.execute( httpHeadTask ))
             {
                 LOGGER.warn( "=> Check HTTP HEAD Response code: " + response.getStatusLine().getStatusCode() );
                 return response.getStatusLine().getStatusCode();
+            }
+            catch ( ConnectTimeoutException te )
+            {
+                LOGGER.error(
+                        " => Not Successfull HTTP HEAD request from StoreValidatorRemote, \n => Exception: " + te );
+                throw new Exception( "Remote Repository not reachable", te );
             }
             catch ( IOException ioe )
             {
