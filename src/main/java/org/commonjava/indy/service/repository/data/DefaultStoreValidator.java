@@ -59,7 +59,7 @@ public class DefaultStoreValidator
     //    @Inject
     //    @WeftManaged
     //    @ExecutorConfig( named = "store-validation", threads = 2, priority = 6 )
-    private final ExecutorService executorService = Executors.newFixedThreadPool( 2 );
+    private final ExecutorService executorService = Executors.newFixedThreadPool( 8 );
 
     @Inject
     IndyRepositoryConfiguration configuration;
