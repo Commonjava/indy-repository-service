@@ -164,13 +164,13 @@ public class CassandraStoreQuery
 
         Map<String, String> extras = dtxArtifactStore.getExtras();
         String members = extras.get( CONSTITUENTS );
-        if ( members == null )
+        if ( members == null || members.isEmpty() )
         {
             return saveExtraValue( member, extras, dtxArtifactStore );
         }
 
         List<String> memberStrList = readListValue( members );
-        if ( memberStrList.isEmpty() )
+        if ( memberStrList ==  null )
         {
             return false;
         }
@@ -190,16 +190,15 @@ public class CassandraStoreQuery
 
     private List<String> readListValue( String value )
     {
-        List<String> result = new ArrayList<>();
         try
         {
-            result = objectMapper.readValue( value, List.class );
+            return objectMapper.readValue( value, List.class );
         }
         catch ( JsonProcessingException e )
         {
             logger.error( "Failed to read member list value, value: {}.", value, e );
+            return null;
         }
-        return result;
     }
 
     private boolean saveExtraValue( Object value, Map<String, String> extras, DtxArtifactStore dtxArtifactStore )
