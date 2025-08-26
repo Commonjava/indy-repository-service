@@ -21,6 +21,7 @@ import org.commonjava.indy.service.repository.data.annotations.MemStoreDataManag
 import org.commonjava.indy.service.repository.change.event.NoOpStoreEventDispatcher;
 import org.commonjava.indy.service.repository.change.event.StoreEventDispatcher;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
+import org.commonjava.indy.service.repository.model.Group;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
@@ -169,6 +170,19 @@ public class MemoryStoreDataManager
     protected ArtifactStore putArtifactStoreInternal( StoreKey storeKey, ArtifactStore store )
     {
         return stores.put( storeKey, store );
+    }
+
+    @Override
+    public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+    {
+        Group group = (Group) stores.get( key );
+        if ( group != null )
+        {
+            group.addConstituent( member );
+            stores.put( key, group );
+            return true;
+        }
+        return false;
     }
 
 }

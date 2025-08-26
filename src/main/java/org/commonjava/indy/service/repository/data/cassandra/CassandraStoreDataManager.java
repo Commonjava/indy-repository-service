@@ -33,7 +33,6 @@ import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Collection;
@@ -406,7 +405,8 @@ public class CassandraStoreDataManager
         if ( store instanceof Group )
         {
             Group group = (Group) store;
-            putValueIntoExtra( CassandraStoreUtil.CONSTITUENTS, group.getConstituents(), extras );
+            // Use admin resource addConstituentToGroup API to add the member of group instead
+            // putValueIntoExtra( CassandraStoreUtil.CONSTITUENTS, group.getConstituents(), extras );
             putValueIntoExtra( CassandraStoreUtil.PREPEND_CONSTITUENT, group.isPrependConstituent(), extras );
         }
         return extras;
@@ -671,6 +671,12 @@ public class CassandraStoreDataManager
     protected CacheProducer getCacheProducer()
     {
         return cacheProducer;
+    }
+
+    @Override
+    public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+    {
+        return storeQuery.addConstituentToGroup( key, member );
     }
 
 }

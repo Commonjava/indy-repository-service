@@ -34,7 +34,6 @@ import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
@@ -257,6 +256,12 @@ public class AdminController
             logger.error( e.getMessage() );
         }
         return disabledArtifactStores;
+    }
+
+    public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+            throws IndyWorkflowException
+    {
+        return storeManager.addConstituentToGroup( key, member );
     }
 
 }

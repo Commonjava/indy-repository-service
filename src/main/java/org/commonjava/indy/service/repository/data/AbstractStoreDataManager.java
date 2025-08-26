@@ -617,4 +617,7 @@ public abstract class AbstractStoreDataManager
     {
         return null;
     }
+
+    @Override
+    public abstract boolean addConstituentToGroup( final StoreKey key, final StoreKey member );
 }
