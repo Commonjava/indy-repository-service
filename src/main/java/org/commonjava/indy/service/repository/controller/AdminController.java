@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.service.repository.controller;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.event.common.EventMetadata;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
@@ -34,9 +37,7 @@ import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.Response;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -261,7 +262,16 @@ public class AdminController
     public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
             throws IndyWorkflowException
     {
-        return storeManager.addConstituentToGroup( key, member );
+        try
+        {
+            return storeManager.addConstituentToGroup( key, member );
+        }
+        catch ( final IndyDataException e )
+        {
+            throw new IndyWorkflowException( INTERNAL_SERVER_ERROR.getStatusCode(),
+                                             "Failed to add member {} into Group {}. Reason: {}", e, member, key,
+                                             e.getMessage() );
+        }
     }
 
 }

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.service.repository.data;
 
+import jakarta.inject.Inject;
 import org.commonjava.event.common.EventMetadata;
 import org.commonjava.event.store.StoreUpdateType;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
@@ -32,7 +33,6 @@ import org.commonjava.indy.service.repository.model.ValuePipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -48,9 +48,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonMap;
-import static jakarta.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.service.repository.data.StoreUpdateAction.DELETE;
@@ -619,5 +619,6 @@ public abstract class AbstractStoreDataManager
     }
 
     @Override
-    public abstract boolean addConstituentToGroup( final StoreKey key, final StoreKey member );
+    public abstract boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+            throws IndyDataException;
 }

@@ -15,11 +15,14 @@
  */
 package org.commonjava.indy.service.repository.data.mem;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
-import org.commonjava.indy.service.repository.data.AbstractStoreDataManager;
-import org.commonjava.indy.service.repository.data.annotations.MemStoreDataManager;
 import org.commonjava.indy.service.repository.change.event.NoOpStoreEventDispatcher;
 import org.commonjava.indy.service.repository.change.event.StoreEventDispatcher;
+import org.commonjava.indy.service.repository.data.AbstractStoreDataManager;
+import org.commonjava.indy.service.repository.data.annotations.MemStoreDataManager;
+import org.commonjava.indy.service.repository.exception.IndyDataException;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.Group;
 import org.commonjava.indy.service.repository.model.StoreKey;
@@ -27,8 +30,6 @@ import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -174,6 +175,7 @@ public class MemoryStoreDataManager
 
     @Override
     public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+            throws IndyDataException
     {
         Group group = (Group) stores.get( key );
         if ( group != null )
