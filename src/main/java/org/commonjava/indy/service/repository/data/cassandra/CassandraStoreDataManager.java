@@ -408,8 +408,7 @@ public class CassandraStoreDataManager
         if ( store instanceof Group )
         {
             Group group = (Group) store;
-            // Use admin resource addConstituentToGroup API to add the member of group instead
-            // putValueIntoExtra( CassandraStoreUtil.CONSTITUENTS, group.getConstituents(), extras );
+            putValueIntoExtra( CassandraStoreUtil.CONSTITUENTS, group.getConstituents(), extras );
             putValueIntoExtra( CassandraStoreUtil.PREPEND_CONSTITUENT, group.isPrependConstituent(), extras );
         }
         return extras;
