@@ -165,4 +165,6 @@ public interface StoreDataManager
 
     Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType );
 
+    boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+            throws IndyDataException;
 }

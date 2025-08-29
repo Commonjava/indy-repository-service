@@ -16,6 +16,22 @@
 package org.commonjava.indy.service.repository.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HEAD;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.indy.service.repository.controller.AdminController;
@@ -40,22 +56,6 @@ import org.jboss.resteasy.spi.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HEAD;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -608,4 +608,57 @@ public class RepositoryAdminResources
         return responseHelper.formatOkResponseWithJsonEntity( adminController.getDisabledRemoteRepositories() );
     }
 
+    @Operation( description = "Add specific member into Group" )
+    @Parameters( value = {
+            @Parameter( name = "packageType", in = PATH, description = "The package type of the Group repository.",
+                        example = "maven, npm, generic-http", required = true ),
+            @Parameter( name = "type", in = PATH, description = "The type of the repository. Must be group.",
+                        schema = @Schema( enumeration = { "group" } ), required = true ) } )
+    @RequestBody( description = "The member store key definition JSON", name = "body", required = true,
+                  content = @Content( schema = @Schema( implementation = StoreKey.class ) ) )
+    @APIResponse( responseCode = "200", description = "The Group member was added" )
+    @Path( "/{name}/addConstituent" )
+    @PUT
+    @Consumes( APPLICATION_JSON )
+    public Response addConstituentToGroup( final @PathParam( "packageType" ) String packageType,
+                                           final @Parameter( in = PATH, required = true )
+                                           @PathParam( "name" ) String name, final @Context HttpRequest request )
+    {
+        String json = null;
+        Response response;
+        StoreKey member;
+        try
+        {
+            json = IOUtils.toString( request.getInputStream(), Charset.defaultCharset() );
+            logger.debug( "{}", json );
+            member = objectMapper.readValue( json, StoreKey.class );
+        }
+        catch ( final IOException e )
+        {
+            logger.error( "Failed to parse member StoreKey {} from request body.", json, e );
+            return responseHelper.formatResponse( e );
+        }
+
+        StoreKey key = new StoreKey( packageType, StoreType.group, name );
+        try
+        {
+            logger.info( "Adding member {} into Group {}", member, key );
+            if ( adminController.addConstituentToGroup( key, member ) )
+            {
+                response = ok().build();
+            }
+            else
+            {
+                logger.warn( "Member {} was NOT added into Group {}!", member, key );
+                response = notModified().build();
+            }
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( e.getMessage() );
+            response = responseHelper.formatResponse( e );
+        }
+
+        return response;
+    }
 }

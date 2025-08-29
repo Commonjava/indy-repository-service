@@ -23,17 +23,24 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.CONSTITUENTS;
 import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.TABLE_AFFECTED_STORE;
 import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.TABLE_STORE;
 
@@ -49,6 +56,9 @@ public class CassandraStoreQuery
 
     @Inject
     CassandraConfiguration config;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     private Mapper<DtxArtifactStore> storeMapper;
 
@@ -141,6 +151,70 @@ public class CassandraStoreQuery
                                                        CassandraStoreUtil.getHashPrefix( name ), name );
         ResultSet result = executeSession( bound );
         return toDtxArtifactStore( result.one() );
+    }
+
+    public boolean addConstituentToGroup( StoreKey key, StoreKey member )
+    {
+        DtxArtifactStore dtxArtifactStore = getArtifactStore( key.getPackageType(), key.getType(), key.getName() );
+        if ( dtxArtifactStore == null )
+        {
+            logger.warn( "No DtxArtifactStore was found to match the StoreKey {}.", key );
+            return false;
+        }
+
+        Map<String, String> extras = dtxArtifactStore.getExtras();
+        String members = extras.get( CONSTITUENTS );
+        if ( members == null || members.isEmpty() )
+        {
+            return saveExtraValue( member, extras, dtxArtifactStore );
+        }
+
+        List<String> memberStrList = readListValue( members );
+        if ( memberStrList ==  null )
+        {
+            return false;
+        }
+        List<StoreKey> memberList = memberStrList.stream().map( StoreKey::fromString ).collect( Collectors.toList() );
+
+        if ( memberList.contains( member ) )
+        {
+            logger.info( "StoreKey {} was already existed in Group {} members, skip.", member, key );
+            return true;
+        }
+        else
+        {
+            memberList.add( member );
+            return saveExtraValue( memberList, extras, dtxArtifactStore );
+        }
+    }
+
+    private List<String> readListValue( String value )
+    {
+        try
+        {
+            return objectMapper.readValue( value, List.class );
+        }
+        catch ( JsonProcessingException e )
+        {
+            logger.error( "Failed to read member list value, value: {}.", value, e );
+            return null;
+        }
+    }
+
+    private boolean saveExtraValue( Object value, Map<String, String> extras, DtxArtifactStore dtxArtifactStore )
+    {
+        try
+        {
+            extras.put( CONSTITUENTS, objectMapper.writeValueAsString( value ) );
+            dtxArtifactStore.setExtras( extras );
+            storeMapper.save( dtxArtifactStore );
+            return true;
+        }
+        catch ( JsonProcessingException e )
+        {
+            logger.error( "Failed to write value into extra, value: {}", value, e );
+            return false;
+        }
     }
 
     public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )

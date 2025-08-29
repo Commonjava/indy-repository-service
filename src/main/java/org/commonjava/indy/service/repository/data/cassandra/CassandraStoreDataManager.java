@@ -17,6 +17,8 @@ package org.commonjava.indy.service.repository.data.cassandra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.service.repository.audit.ChangeSummary;
 import org.commonjava.indy.service.repository.change.event.StoreEventDispatcher;
@@ -24,6 +26,7 @@ import org.commonjava.indy.service.repository.data.AbstractStoreDataManager;
 import org.commonjava.indy.service.repository.data.annotations.ClusterStoreDataManager;
 import org.commonjava.indy.service.repository.data.infinispan.CacheHandle;
 import org.commonjava.indy.service.repository.data.infinispan.CacheProducer;
+import org.commonjava.indy.service.repository.exception.IndyDataException;
 import org.commonjava.indy.service.repository.model.AbstractRepository;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
 import org.commonjava.indy.service.repository.model.Group;
@@ -34,8 +37,6 @@ import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -671,6 +673,31 @@ public class CassandraStoreDataManager
     protected CacheProducer getCacheProducer()
     {
         return cacheProducer;
+    }
+
+    @Override
+    public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+            throws IndyDataException
+    {
+        AtomicReference<IndyDataException> error = new AtomicReference<>();
+        Boolean res = opLocks.lockAnd( key, LOCK_TIMEOUT_SECONDS, k -> storeQuery.addConstituentToGroup( k, member ),
+                                       ( k, lock ) -> {
+                                           error.set( new IndyDataException(
+                                                   "Failed to lock: %s for Group member add after %d seconds.", k,
+                                                   LOCK_TIMEOUT_SECONDS ) );
+                                           return false;
+                                       } );
+
+        if ( res == null )
+        {
+            throw new IndyDataException( "Add Group member failed due to tryLock timeout." );
+        }
+        IndyDataException ex = error.get();
+        if ( ex != null )
+        {
+            throw ex;
+        }
+        return res;
     }
 
 }
