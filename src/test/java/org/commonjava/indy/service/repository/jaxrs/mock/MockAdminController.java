@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.service.repository.jaxrs.mock;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.ws.rs.core.Response;
 import org.commonjava.indy.service.repository.controller.AdminController;
 import org.commonjava.indy.service.repository.exception.IndyWorkflowException;
 import org.commonjava.indy.service.repository.model.ArtifactStore;
@@ -26,9 +29,6 @@ import org.commonjava.indy.service.repository.model.StoreKey;
 import org.commonjava.indy.service.repository.model.StoreType;
 import org.junit.jupiter.api.Test;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Alternative;
-import jakarta.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -140,5 +140,22 @@ public class MockAdminController
         HostedRepository repo2 = new HostedRepository( MAVEN_PKG_KEY, "test2" );
         Group group = new Group( MAVEN_PKG_KEY, "test3", repo1.getKey(), repo2.getKey() );
         return Arrays.asList( repo1, repo2, group );
+    }
+
+    @Override
+    public boolean addConstituentToGroup( final StoreKey key, final StoreKey member )
+            throws IndyWorkflowException
+    {
+        if ( key.equals( StoreKey.fromString( "maven:group:success" ) ) && member.equals(
+                StoreKey.fromString( "maven:remote:member" ) ) )
+        {
+            return true;
+        }
+        if ( key.equals( StoreKey.fromString( "maven:group:error" ) ) && member.equals(
+                StoreKey.fromString( "maven:remote:member" ) ) )
+        {
+            throw new IndyWorkflowException( "error happened" );
+        }
+        return false;
     }
 }

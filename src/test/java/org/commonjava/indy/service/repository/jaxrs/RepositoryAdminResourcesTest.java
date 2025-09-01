@@ -20,9 +20,9 @@ import io.quarkus.test.junit.TestProfile;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
+import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
 
-import jakarta.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,8 +37,8 @@ import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.NOT_MODIFIED;
 import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static jakarta.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.is;
 import static org.commonjava.indy.service.repository.util.PathUtils.normalize;
+import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 @TestProfile( MockTestProfile.class )
@@ -331,5 +331,57 @@ public class RepositoryAdminResourcesTest
                .statusCode( BAD_REQUEST.getStatusCode() )
                .contentType( MediaType.APPLICATION_JSON )
                .body( "error", is( "Not supporte repository type of hosted" ) );
+    }
+
+    @Test
+    public void testAddGroupConstituentSuccess()
+    {
+        Map<String, String> member = new HashMap<>();
+        member.put( "packageType", "maven" );
+        member.put( "type", "remote" );
+        member.put( "name", "member" );
+        member.put( "url", "http://repo.member" );
+        member.put( "key", "maven:remote:member" );
+
+        given().when()
+               .body( member )
+               .contentType( APPLICATION_JSON )
+               .put( normalize( BASE_STORE_PATH, "maven/group/success/addConstituent" ) )
+               .then()
+               .statusCode( OK.getStatusCode() );
+    }
+
+    @Test
+    public void testAddGroupConstituentNonSuccess()
+    {
+        Map<String, String> member = new HashMap<>();
+        member.put( "packageType", "maven" );
+        member.put( "type", "remote" );
+        member.put( "name", "member" );
+        member.put( "url", "http://repo.member" );
+        member.put( "key", "maven:remote:member" );
+        given().when()
+               .body( member )
+               .contentType( APPLICATION_JSON )
+               .put( normalize( BASE_STORE_PATH, "maven/group/nonsuccess/addConstituent" ) )
+               .then()
+               .statusCode( NOT_MODIFIED.getStatusCode() );
+    }
+
+    @Test
+    public void testAddGroupConstituentError()
+    {
+        Map<String, String> member = new HashMap<>();
+        member.put( "packageType", "maven" );
+        member.put( "type", "remote" );
+        member.put( "name", "member" );
+        member.put( "url", "http://repo.member" );
+        member.put( "key", "maven:remote:member" );
+        given().when()
+               .body( member )
+               .contentType( APPLICATION_JSON )
+               .put( normalize( BASE_STORE_PATH, "maven/group/error/addConstituent" ) )
+               .then()
+               .statusCode( INTERNAL_SERVER_ERROR.getStatusCode() );
     }
 }
