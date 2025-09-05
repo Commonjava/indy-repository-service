@@ -33,7 +33,6 @@ import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +161,7 @@ public class CassandraStoreQuery
             return false;
         }
 
+        dtxArtifactStore.setTypeKey( CassandraStoreUtil.getTypeKey( key.getPackageType(), key.getType().name() ) );
         Map<String, String> extras = dtxArtifactStore.getExtras();
         String members = extras.get( CONSTITUENTS );
         if ( members == null || members.isEmpty() )
