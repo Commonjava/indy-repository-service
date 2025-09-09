@@ -76,6 +76,8 @@ public class CassandraStoreUtil
     public static final String KEY = "key";
     public static final String AFFECTED_STORES = "affectedStores";
 
+    public static final String KOJI_PREFIX = "koji-";
+
     public static final int MODULO_VALUE = 10;
 
     public static String getSchemaCreateTableStore( String keySpace )
