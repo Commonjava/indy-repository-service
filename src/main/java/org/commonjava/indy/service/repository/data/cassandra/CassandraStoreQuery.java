@@ -33,6 +33,7 @@ import org.commonjava.indy.service.repository.model.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.CONSTITUENTS;
+import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.KOJI_PREFIX;
 import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.TABLE_AFFECTED_STORE;
 import static org.commonjava.indy.service.repository.data.cassandra.CassandraStoreUtil.TABLE_STORE;
+import static org.commonjava.indy.service.repository.model.ArtifactStore.METADATA_CHANGELOG;
 
 @ApplicationScoped
 //@Startup
@@ -164,13 +167,19 @@ public class CassandraStoreQuery
         dtxArtifactStore.setTypeKey( CassandraStoreUtil.getTypeKey( key.getPackageType(), key.getType().name() ) );
         Map<String, String> extras = dtxArtifactStore.getExtras();
         String members = extras.get( CONSTITUENTS );
+        String changelog = String.format( "%s%s, %s", "Adding repository: ", member.getName(), new Date() );
+        if ( member.getName().startsWith( KOJI_PREFIX ) )
+        {
+            changelog = String.format( "%s%s, %s", "Adding remote repository for Koji build: ",
+                                       member.getName().substring( 5 ), new Date() );
+        }
         if ( members == null || members.isEmpty() )
         {
-            return saveExtraValue( member, extras, dtxArtifactStore );
+            return saveExtraValue( member, extras, dtxArtifactStore, changelog );
         }
 
         List<String> memberStrList = readListValue( members );
-        if ( memberStrList ==  null )
+        if ( memberStrList == null )
         {
             return false;
         }
@@ -184,7 +193,7 @@ public class CassandraStoreQuery
         else
         {
             memberList.add( member );
-            return saveExtraValue( memberList, extras, dtxArtifactStore );
+            return saveExtraValue( memberList, extras, dtxArtifactStore, changelog );
         }
     }
 
@@ -201,12 +210,18 @@ public class CassandraStoreQuery
         }
     }
 
-    private boolean saveExtraValue( Object value, Map<String, String> extras, DtxArtifactStore dtxArtifactStore )
+    private boolean saveExtraValue( Object value, Map<String, String> extras, DtxArtifactStore dtxArtifactStore,
+                                    String changelog )
     {
         try
         {
             extras.put( CONSTITUENTS, objectMapper.writeValueAsString( value ) );
             dtxArtifactStore.setExtras( extras );
+
+            Map<String, String> metas = dtxArtifactStore.getMetadata();
+            metas.put( METADATA_CHANGELOG, changelog );
+            dtxArtifactStore.setMetadata( metas );
+
             storeMapper.save( dtxArtifactStore );
             return true;
         }
